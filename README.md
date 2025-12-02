@@ -21,11 +21,13 @@
 把下面的提示词发给 Claude Code：
 
 ```
-帮我安装 Obsidian 插件：
+帮我一键安装 AI 写作系统：
 
-1. 克隆仓库：https://github.com/Ceeon/ai-writing-plugins
-2. 把 obsidian-apple-style 和 obsidian-image-uploader 文件夹复制到我的 Obsidian 插件目录
-3. 告诉我怎么启用插件
+1. 用 brew 安装 PicGo 和 Obsidian（如果没装的话）
+2. 克隆 https://github.com/Ceeon/ai-writing-plugins
+3. 找到我电脑上的 Obsidian 笔记库，把插件复制到 .obsidian/plugins/ 目录
+4. 告诉我怎么配置 PicGo 的 GitHub 图床
+5. 告诉我怎么启用插件
 ```
 
 ## 插件说明
