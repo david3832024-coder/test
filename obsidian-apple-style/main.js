@@ -20,6 +20,7 @@ class AppleStyleView extends ItemView {
     this.plugin = plugin;
     this.currentHtml = null;
     this.converter = null;
+    this.lastActiveFile = null; // 缓存最后一个活动的 Markdown 文件
   }
 
   getViewType() {
@@ -76,11 +77,17 @@ class AppleStyleView extends ItemView {
       this.app.workspace.on('active-leaf-change', async (leaf) => {
         console.log('🔄 文件切换事件触发');
 
+        // 如果有打开的 Markdown 文件，缓存它
+        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (activeView && activeView.file) {
+          this.lastActiveFile = activeView.file;
+          console.log('📄 缓存文件:', this.lastActiveFile.basename);
+        }
+
         // 更新当前文档显示
         this.updateCurrentDoc();
 
         // 如果有打开的 Markdown 文件，自动转换（静默模式）
-        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (activeView && this.converter) {
           // 延迟一下，确保文件已完全加载
           setTimeout(async () => {
@@ -239,6 +246,11 @@ class AppleStyleView extends ItemView {
       console.log('📝 更新文档显示:', file.basename);
       this.currentDocLabel.setText(`📄 ${file.basename}`);
       this.currentDocLabel.style.color = '#0071e3';
+    } else if (this.lastActiveFile && this.currentDocLabel) {
+      // 使用缓存的文件名
+      console.log('📝 显示缓存文档:', this.lastActiveFile.basename);
+      this.currentDocLabel.setText(`📄 ${this.lastActiveFile.basename}`);
+      this.currentDocLabel.style.color = '#0071e3';
     } else if (this.currentDocLabel) {
       console.log('⚠️ 未选择文档');
       this.currentDocLabel.setText('未选择文档');
@@ -283,16 +295,30 @@ class AppleStyleView extends ItemView {
    * @param {boolean} silent - 静默模式，不显示通知
    */
   async convertCurrent(silent = false) {
-    const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    let markdown = '';
 
-    if (!activeView) {
+    // 如果当前没有活动的 Markdown 视图，尝试使用缓存的文件
+    if (!activeView && this.lastActiveFile) {
+      // 从缓存的文件读取内容
+      try {
+        markdown = await this.app.vault.read(this.lastActiveFile);
+        console.log('📄 使用缓存文件:', this.lastActiveFile.basename);
+      } catch (error) {
+        console.error('读取缓存文件失败:', error);
+        if (!silent) {
+          new Notice('请先打开一个 Markdown 文件');
+        }
+        return;
+      }
+    } else if (activeView) {
+      markdown = activeView.editor.getValue();
+    } else {
       if (!silent) {
         new Notice('请先打开一个 Markdown 文件');
       }
       return;
     }
-
-    const markdown = activeView.editor.getValue();
 
     if (!markdown.trim()) {
       if (!silent) {
