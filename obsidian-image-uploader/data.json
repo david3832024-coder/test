@@ -1,8 +1,0 @@
-{
-  "apiEndpoint": " https://api.imgur.com/3/image",
-  "uploadHeader": " {\n    \"Authorization\": \"Client-ID 2d1c5fe1f31da3e\"\n  }",
-  "uploadBody": "{\n    \"image\": \"$FILE\"\n  }",
-  "imageUrlPath": "data.link",
-  "maxWidth": 4096,
-  "enableResize": false
-}
